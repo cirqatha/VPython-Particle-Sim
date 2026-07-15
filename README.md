@@ -11,12 +11,14 @@ No install needed — works in any browser.
 
 ## Calculation
 
-Forces between all particle pairs are computed each frame using an inverse-square 
-repulsion law, then summed per particle. Position and velocity are updated via 
-Euler integration, followed by a partial normalisation step that softly constrains 
-each particle to the sphere surface. All frames are pre-computed and stored in a 
-2D list before playback begins.
+- Every particle exerts an inverse-square repulsive force on every other particle
+- All forces on each particle are summed each frame (O(n²) pair calculations)
+- Force is used to update velocity, velocity is used to update position 
+- A damping constant is applied to velocity each frame to bleed off energy and help the system settle
+- After each position update, a partial normalisation nudges particles back toward the sphere surface without snapping them instantly
+- All frames are pre-computed and stored in a 2D list before the animation plays back
 
+- 
 ## How to Run Locally 
 Just run the HTML file if python one causes error
 
