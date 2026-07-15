@@ -36,12 +36,6 @@ python AutoSim.py
 
 A browser tab will open automatically with the 3D simulation.
 
-## How It Works
-- Particles start at random positions on a sphere
-- Each particle repels every other particle (inverse square law)
-- A normalisation force keeps them on the sphere surface
-- After simulating 100 seconds of physics, it plays back the animation
-- Cylinders draw bonds to each particle's nearest neighbour
 
 ## Controls
 Use your mouse to rotate, zoom, and pan the 3D view in the browser window.
