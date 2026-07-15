@@ -9,6 +9,13 @@ https://glowscript.org/#/user/angadmaster123/folder/MyPrograms/program/AtomSim
 
 No install needed — works in any browser.
 
+## Calculation
+
+Forces between all particle pairs are computed each frame using an inverse-square 
+repulsion law, then summed per particle. Position and velocity are updated via 
+Euler integration, followed by a partial normalisation step that softly constrains 
+each particle to the sphere surface. All frames are pre-computed and stored in a 
+2D list before playback begins.
 
 ## How to Run Locally 
 Just run the HTML file if python one causes error
