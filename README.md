@@ -18,7 +18,7 @@ No install needed — works in any browser.
 - After each position update, a partial normalisation nudges particles back toward the sphere surface without snapping them instantly
 - All frames are pre-computed and stored in a 2D list before the animation plays back
 
-- 
+  
 ## How to Run Locally 
 Just run the HTML file if python one causes error
 
