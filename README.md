@@ -3,6 +3,7 @@
 A 3D physics simulation that models how particles arrange themselves on the 
 surface of a sphere using repulsive forces — visually demonstrating VSEPR 
 theory by taking in a number of peripheral atoms.
+No AI was used, it was just calculation stuff to do before working on this simulation project. 
 
 ## Live Demo
 https://glowscript.org/#/user/angadmaster123/folder/MyPrograms/program/AtomSim
