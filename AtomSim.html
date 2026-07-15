@@ -1,0 +1,362 @@
+<div id="glowscript" class="glowscript">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link type="text/css" href="https://www.glowscript.org/css/redmond/2.1/jquery-ui.custom.css" rel="stylesheet" />
+<link type="text/css" href="https://www.glowscript.org/css/ide.css" rel="stylesheet" />
+<script type="text/javascript" src="https://www.glowscript.org/lib/jquery/2.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://www.glowscript.org/lib/jquery/2.1/jquery-ui.custom.min.js"></script>
+<script type="text/javascript" src="https://www.glowscript.org/package/glow.3.2.min.js"></script>
+<script type="text/javascript" src="https://www.glowscript.org/package/RSrun.3.2.min.js"></script>
+<script type="text/javascript"><!--//--><![CDATA[//><!--
+
+// START JAVASCRIPT
+;(function() {;
+var ρσ_modules = {};
+ρσ_modules.pythonize = {};
+
+(function(){
+    function strings() {
+        var string_funcs, exclude, name;
+        string_funcs = set("capitalize strip lstrip rstrip islower isupper isspace lower upper swapcase center count endswith startswith find rfind index rindex format join ljust rjust partition rpartition replace split rsplit splitlines zfill".split(" "));
+        if (!arguments.length) {
+            exclude = (function(){
+                var s = ρσ_set();
+                s.jsset.add("split");
+                s.jsset.add("replace");
+                return s;
+            })();
+        } else if (arguments[0]) {
+            exclude = Array.prototype.slice.call(arguments);
+        } else {
+            exclude = null;
+        }
+        if (exclude) {
+            string_funcs = string_funcs.difference(set(exclude));
+        }
+        var ρσ_Iter0 = string_funcs;
+        ρσ_Iter0 = ((typeof ρσ_Iter0[Symbol.iterator] === "function") ? (ρσ_Iter0 instanceof Map ? ρσ_Iter0.keys() : ρσ_Iter0) : Object.keys(ρσ_Iter0));
+        for (var ρσ_Index0 of ρσ_Iter0) {
+            name = ρσ_Index0;
+            (ρσ_expr_temp = String.prototype)[(typeof name === "number" && name < 0) ? ρσ_expr_temp.length + name : name] = (ρσ_expr_temp = ρσ_str.prototype)[(typeof name === "number" && name < 0) ? ρσ_expr_temp.length + name : name];
+        }
+    };
+    if (!strings.__module__) Object.defineProperties(strings, {
+        __module__ : {value: "pythonize"}
+    });
+
+    ρσ_modules.pythonize.strings = strings;
+})();
+async function __main__() {
+"use strict";
+    var display = canvas;
+    var scene = canvas();
+
+    function round(num, n=0) {return Number(num.toFixed(n))}
+
+    var version, print, arange, __name__, type, ρσ_ls, grid_size, grid_spacing, x, z, c, randm, Force, speed, Damp_const, Force_const, num_particles, Normalisation_factor, Seconds_To_Run, rate_pre, arrow_scale, particles, velocities, Forces, positions, forces_history, Centr_Atom, cylinders, arrows_tan, arrows_rad, first_positions, new_position, i, new_particle, new_velocity, cylinder_first, new_cylinder, j, a, total_steps, final_force, dist, force_magnitude, direction, force, Predictions, Predicted_coords, Final_Pos, angle, rotation_speed, r_hat, f, f_radial, f_tangential, lowest_dist, k;
+    version = ρσ_list_decorate([ "3.2", "glowscript" ]);
+    Array.prototype['+'] = function(r) {return this.concat(r)}
+    Array.prototype['*'] = function(r) {return __array_times_number(this, r)}
+    window.__GSlang = "vpython";
+    print = GSprint;
+    arange = range;
+    __name__ = "__main__";
+    type = pytype;
+    var strings = ρσ_modules.pythonize.strings;
+
+    strings();
+    "3";
+    scene.width = 1200;
+    "4";
+    scene.height = 700;
+    "5";
+    scene.range = 30;
+    "6";
+    scene.background = color.black;
+    "7";
+    scene.center = vector(0, 0, 0);
+    "8";
+    scene.forward = vector(0, 1["-u"]()["*"](.3), 1["-u"]()["*"](1));
+    (await sleep(.1));
+    "9";
+    scene.autoscale = false;
+    "12";
+    grid_size = 60;
+    "13";
+    grid_spacing = 5;
+    "15";
+    var ρσ_Iter1 = range(1["-u"]()["*"](grid_size), grid_size["+"](grid_spacing), grid_spacing);
+    ρσ_Iter1 = ((typeof ρσ_Iter1[Symbol.iterator] === "function") ? (ρσ_Iter1 instanceof Map ? ρσ_Iter1.keys() : ρσ_Iter1) : Object.keys(ρσ_Iter1));
+    for (var ρσ_Index1 of ρσ_Iter1) {
+        x = ρσ_Index1;
+        "16";
+        ρσ_interpolate_kwargs.call(this, curve, [ρσ_desugar_kwargs({pos: ρσ_list_decorate([ vector(x, 1["-u"]()["*"](4), 1["-u"]()["*"](grid_size)), vector(x, 1["-u"]()["*"](4), grid_size) ]), color: color.white, radius: .05})]);
+    }
+    "18";
+    var ρσ_Iter2 = range(1["-u"]()["*"](grid_size), grid_size["+"](grid_spacing), grid_spacing);
+    ρσ_Iter2 = ((typeof ρσ_Iter2[Symbol.iterator] === "function") ? (ρσ_Iter2 instanceof Map ? ρσ_Iter2.keys() : ρσ_Iter2) : Object.keys(ρσ_Iter2));
+    for (var ρσ_Index2 of ρσ_Iter2) {
+        z = ρσ_Index2;
+        "19";
+        ρσ_interpolate_kwargs.call(this, curve, [ρσ_desugar_kwargs({pos: ρσ_list_decorate([ vector(1["-u"]()["*"](grid_size), 1["-u"]()["*"](4), z), vector(grid_size, 1["-u"]()["*"](4), z) ]), color: color.white, radius: .05})]);
+    }
+    "21";
+    c = 2;
+    "22";
+    randm = 1;
+    "23";
+    Force = 30;
+    "24";
+    speed = 5;
+    "25";
+    Damp_const = .99;
+    "26";
+    Force_const = 100;
+    "27";
+    num_particles = 6;
+    "28";
+    Normalisation_factor = .2;
+    "29";
+    Seconds_To_Run = 150;
+    "30";
+    rate_pre = 100;
+    "31";
+    arrow_scale = .1;
+    "33";
+    particles = ρσ_list_decorate([]);
+    "34";
+    velocities = ρσ_list_decorate([]);
+    "35";
+    Forces = ρσ_list_decorate([]);
+    "36";
+    positions = ρσ_list_decorate([]);
+    "37";
+    forces_history = ρσ_list_decorate([]);
+    "39";
+    Centr_Atom = ρσ_interpolate_kwargs.call(this, sphere, [ρσ_desugar_kwargs({pos: vector(0, 0, 0), radius: .5, color: color.white})]);
+    "40";
+    cylinders = ρσ_list_decorate([]);
+    "41";
+    arrows_tan = ρσ_list_decorate([]);
+    "42";
+    arrows_rad = ρσ_list_decorate([]);
+    "44";
+    first_positions = ρσ_list_decorate([]);
+    "45";
+    for (var ρσ_Index3 = 0; ρσ_Index3["<"](num_particles); ρσ_Index3++) {
+        i = ρσ_Index3;
+        "46";
+        new_position = norm(vector(randm["*"](2["*"](random())["-"](1["*"](1))), randm["*"](2["*"](random())["-"](1["*"](1))), randm["*"](2["*"](random())["-"](1["*"](1)))))["*"](c);
+        "47";
+        first_positions.append(new_position);
+    }
+    "49";
+    positions.append(first_positions);
+    "51";
+    for (var ρσ_Index4 = 0; ρσ_Index4["<"](num_particles); ρσ_Index4++) {
+        i = ρσ_Index4;
+        "52";
+        new_particle = ρσ_interpolate_kwargs.call(this, sphere, [ρσ_desugar_kwargs({pos: ρσ_getitem(ρσ_getitem(positions, 0), i), radius: .25, color: color.green})]);
+        "53";
+        new_particle.pos = norm(new_particle.pos)["*"](c);
+        "54";
+        particles.append(new_particle);
+    }
+    "56";
+    for (var ρσ_Index5 = 0; ρσ_Index5["<"](num_particles); ρσ_Index5++) {
+        i = ρσ_Index5;
+        "57";
+        new_velocity = vector(speed["*"](2["*"](random())["-"](1["*"](1))), speed["*"](2["*"](random())["-"](1["*"](1))), speed["*"](2["*"](random())["-"](1["*"](1))));
+        "58";
+        velocities.append(new_velocity);
+    }
+    "60";
+    for (var ρσ_Index6 = 0; ρσ_Index6["<"](num_particles); ρσ_Index6++) {
+        i = ρσ_Index6;
+        "61";
+        cylinder_first = ρσ_list_decorate([]);
+        "62";
+        for (var ρσ_Index7 = 0; ρσ_Index7["<"](num_particles); ρσ_Index7++) {
+            j = ρσ_Index7;
+            "63";
+            if ((i !== j && (typeof i !== "object" || ρσ_not_equals(i, j)))) {
+                "64";
+                new_cylinder = ρσ_interpolate_kwargs.call(this, cylinder, [ρσ_desugar_kwargs({pos: ρσ_getitem(ρσ_getitem(positions, 1["-u"]()["*"](1)), i), axis: ρσ_getitem(ρσ_getitem(positions, 1["-u"]()["*"](1)), j)["-"](1["*"](ρσ_getitem(ρσ_getitem(positions, 1["-u"]()["*"](1)), i))), length: mag(ρσ_getitem(ρσ_getitem(positions, 1["-u"]()["*"](1)), j)["-"](1["*"](ρσ_getitem(ρσ_getitem(positions, 1["-u"]()["*"](1)), i)))), radius: .1, color: color.white, visible: false})]);
+                "72";
+                cylinder_first.append(new_cylinder);
+                "73";
+            } else {
+                "74";
+                cylinder_first.append(null);
+            }
+        }
+        "75";
+        cylinders.append(cylinder_first);
+    }
+    "78";
+    for (var ρσ_Index8 = 0; ρσ_Index8["<"](num_particles); ρσ_Index8++) {
+        i = ρσ_Index8;
+        "79";
+        arrows_tan.append(ρσ_interpolate_kwargs.call(this, arrow, [ρσ_desugar_kwargs({pos: ρσ_getitem(ρσ_getitem(positions, 0), i), axis: vector(0, .01, 0), color: color.red, shaftwidth: .12})]));
+        "80";
+        arrows_rad.append(ρσ_interpolate_kwargs.call(this, arrow, [ρσ_desugar_kwargs({pos: ρσ_getitem(ρσ_getitem(positions, 0), i), axis: vector(0, .01, 0), color: color.cyan, shaftwidth: .07, opacity: .4})]));
+    }
+    "82";
+    a = 0;
+    "83";
+    total_steps = Seconds_To_Run["*"](60);
+    "85";
+    while (a["<="](total_steps)) {
+        "86";
+        for (var ρσ_Index9 = 0; ρσ_Index9["<"](num_particles); ρσ_Index9++) {
+            i = ρσ_Index9;
+            "87";
+            final_force = vector(0, 0, 0);
+            "88";
+            for (var ρσ_Index10 = 0; ρσ_Index10["<"](num_particles); ρσ_Index10++) {
+                j = ρσ_Index10;
+                "89";
+                if ((i !== j && (typeof i !== "object" || ρσ_not_equals(i, j)))) {
+                    "90";
+                    dist = mag(ρσ_getitem(ρσ_getitem(positions, 1["-u"]()["*"](1)), i)["-"](1["*"](ρσ_getitem(ρσ_getitem(positions, 1["-u"]()["*"](1)), j))));
+                    "91";
+                    force_magnitude = Math.pow(Force, 2)["/"](Math.pow(dist, 2));
+                    "92";
+                    direction = norm(ρσ_getitem(ρσ_getitem(positions, 1["-u"]()["*"](1)), i)["-"](1["*"](ρσ_getitem(ρσ_getitem(positions, 1["-u"]()["*"](1)), j))));
+                    "93";
+                    force = force_magnitude["*"](direction);
+                    "94";
+                    final_force=final_force["+"](force);
+                }
+            }
+            "95";
+            final_force=final_force["*"](Force_const);
+            "96";
+            Forces.append(final_force);
+        }
+        "98";
+        forces_history.append(list(Forces));
+        "100";
+        Predictions = ρσ_list_decorate([]);
+        "101";
+        for (var ρσ_Index11 = 0; ρσ_Index11["<"](num_particles); ρσ_Index11++) {
+            i = ρσ_Index11;
+            "102";
+            Predicted_coords = ρσ_getitem(ρσ_getitem(positions, 1["-u"]()["*"](1)), i)["+"](ρσ_getitem(velocities, i)["*"](1)["/"](60))["+"](ρσ_getitem(Forces, i)["*"](1)["/"](7200));
+            "103";
+            Final_Pos = Predicted_coords["+"](c["-"](1["*"](mag(Predicted_coords)))["*"](norm(Predicted_coords))["*"](Normalisation_factor));
+            "104";
+            Predictions.append(Final_Pos);
+            "105";
+            ρσ_setitem(velocities, i, ρσ_getitem(velocities, i)["+"](ρσ_getitem(Forces, i)["*"](1)["/"](60)));
+            "106";
+            ρσ_setitem(velocities, i, ρσ_getitem(velocities, i)["*"](Damp_const));
+        }
+        "108";
+        positions.append(Predictions);
+        "109";
+        Forces = ρσ_list_decorate([]);
+        "110";
+        a=a["+"](1);
+    }
+    "112";
+    angle = 0;
+    "113";
+    rotation_speed = .002;
+    "115";
+    while (true) {
+        "116";
+        (await rate(rate_pre));
+        "117";
+        var ρσ_Iter12 = range(len(positions));
+        ρσ_Iter12 = ((typeof ρσ_Iter12[Symbol.iterator] === "function") ? (ρσ_Iter12 instanceof Map ? ρσ_Iter12.keys() : ρσ_Iter12) : Object.keys(ρσ_Iter12));
+        for (var ρσ_Index12 of ρσ_Iter12) {
+            j = ρσ_Index12;
+            "118";
+            (await rate(rate_pre));
+            "120";
+            angle=angle["+"](rotation_speed);
+            "121";
+            scene.forward = vector(sin(angle), 1["-u"]()["*"](.3), 1["-u"]()["*"](cos(angle)));
+            "123";
+            for (var ρσ_Index13 = 0; ρσ_Index13["<"](num_particles); ρσ_Index13++) {
+                i = ρσ_Index13;
+                "124";
+                ρσ_getitem(particles, i).pos = ρσ_getitem(ρσ_getitem(positions, j), i);
+                "126";
+                if (j["<"](len(forces_history))) {
+                    "127";
+                    r_hat = norm(ρσ_getitem(ρσ_getitem(positions, j), i));
+                    "128";
+                    f = ρσ_getitem(ρσ_getitem(forces_history, j), i)["*"](arrow_scale);
+                    "129";
+                    f_radial = dot(f, r_hat)["*"](r_hat);
+                    "130";
+                    f_tangential = f["-"](1["*"](f_radial));
+                    "132";
+                    ρσ_getitem(arrows_tan, i).pos = ρσ_getitem(ρσ_getitem(positions, j), i);
+                    "133";
+                    ρσ_getitem(arrows_tan, i).axis = f_tangential;
+                    "135";
+                    ρσ_getitem(arrows_rad, i).pos = ρσ_getitem(ρσ_getitem(positions, j), i);
+                    "136";
+                    ρσ_getitem(arrows_rad, i).axis = f_radial["*"](.4);
+                }
+            }
+            "138";
+            var ρσ_Iter14 = range(len(cylinders));
+            ρσ_Iter14 = ((typeof ρσ_Iter14[Symbol.iterator] === "function") ? (ρσ_Iter14 instanceof Map ? ρσ_Iter14.keys() : ρσ_Iter14) : Object.keys(ρσ_Iter14));
+            for (var ρσ_Index14 of ρσ_Iter14) {
+                i = ρσ_Index14;
+                "139";
+                lowest_dist = 1e4;
+                "140";
+                for (var ρσ_Index15 = 0; ρσ_Index15["<"](num_particles); ρσ_Index15++) {
+                    k = ρσ_Index15;
+                    "141";
+                    if ((i === k || typeof i === "object" && ρσ_equals(i, k))) {
+                        "142";
+                        continue;
+                        "143";
+                    }
+                    if (mag(ρσ_getitem(ρσ_getitem(positions, j), k)["-"](1["*"](ρσ_getitem(ρσ_getitem(positions, j), i))))["<"](lowest_dist)) {
+                        "144";
+                        lowest_dist = mag(ρσ_getitem(ρσ_getitem(positions, j), k)["-"](1["*"](ρσ_getitem(ρσ_getitem(positions, j), i))));
+                    }
+                }
+                "145";
+                for (var ρσ_Index16 = 0; ρσ_Index16["<"](num_particles); ρσ_Index16++) {
+                    k = ρσ_Index16;
+                    "146";
+                    if ((i === k || typeof i === "object" && ρσ_equals(i, k))) {
+                        "147";
+                        continue;
+                        "148";
+                    }
+                    if (mag(ρσ_getitem(ρσ_getitem(positions, j), k)["-"](1["*"](ρσ_getitem(ρσ_getitem(positions, j), i))))[">"](lowest_dist["*"](.9)) && mag(ρσ_getitem(ρσ_getitem(positions, j), k)["-"](1["*"](ρσ_getitem(ρσ_getitem(positions, j), i))))["<"](lowest_dist["*"](1.1))) {
+                        "149";
+                        ρσ_getitem(ρσ_getitem(cylinders, i), k).pos = ρσ_getitem(ρσ_getitem(positions, j), i);
+                        "150";
+                        ρσ_getitem(ρσ_getitem(cylinders, i), k).axis = ρσ_getitem(ρσ_getitem(positions, j), k)["-"](1["*"](ρσ_getitem(ρσ_getitem(positions, j), i)));
+                        "151";
+                        ρσ_getitem(ρσ_getitem(cylinders, i), k).length = mag(ρσ_getitem(ρσ_getitem(positions, j), k)["-"](1["*"](ρσ_getitem(ρσ_getitem(positions, j), i))));
+                        "152";
+                        ρσ_getitem(ρσ_getitem(cylinders, i), k).visible = true;
+                        "153";
+                    } else {
+                        "154";
+                        ρσ_getitem(ρσ_getitem(cylinders, i), k).visible = false;
+                    }
+                }
+            }
+        }
+    }
+};
+if (!__main__.__module__) Object.defineProperties(__main__, {
+    __module__ : {value: null}
+});
+
+;$(function(){ window.__context = { glowscript_container: $("#glowscript").removeAttr("id") }; __main__() })})()
+// END JAVASCRIPT
+
+//--><!]]></script>
+</div>
