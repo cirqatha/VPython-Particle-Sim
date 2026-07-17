@@ -44,6 +44,9 @@ python AutoSim.py
 
 A browser tab will open automatically with the 3D simulation.
 
+It'll show you the time it will take in vs code terminal, if its too big, it'll simply take more time 
+eg. 10000 particle calculation took 1213 seconds
+
 
 ## Controls
 Use your mouse to rotate, zoom, and pan the 3D view in the browser window.
