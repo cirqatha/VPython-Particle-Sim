@@ -1,316 +1,259 @@
 from vpython import *
-from time import *
 import random
+import numpy as np
+import time
 
-c = 2
-randm = 1
-Force = 30
-radius = 0.01
-speed = 5
-Damp_const = 0.99
-Force_const = 100
-num_particles = 6
-Normalisation_factor = 0.2
-Seconds_To_Run = 100
-rate_pre = 100
+scene.width = 300
+scene.height = 100
+scene.range = 20000
+scene.background = color.black
+scene.center = vector(0, 0, 0)
+scene.forward = vector(0, -0.3, -1)
+scene.autoscale = False
+
+SHOW_CYLINDERS        = True    
+FINAL_CYLINDERS_ONLY  = True   
+                                
+SHOW_ARROWS           = True   
+SHOW_GRID             = False  
+FINAL_ONLY            = True    
+
+
+if SHOW_GRID:
+    grid_size = 600
+    grid_spacing = 50
+    for x in range(-grid_size, grid_size + grid_spacing, grid_spacing):
+        curve(pos=[vector(x, -4, -grid_size), vector(x, -4, grid_size)], color=color.white, radius=0.05)
+    for z in range(-grid_size, grid_size + grid_spacing, grid_spacing):
+        curve(pos=[vector(-grid_size, -4, z), vector(grid_size, -4, z)], color=color.white, radius=0.05)
+
+
+c                    = 50
+Force                = 1000000
+speed                = 5
+Damp_const           = 0.9
+Force_const          = 5000000
+num_particles        = 10000
+Normalisation_factor = 0.5
+Seconds_To_Run       = 5
+rate_pre             = 60
+arrow_scale          = 0.005
+total_steps          = Seconds_To_Run * 60
+
+
+Centr_Atom = sphere(pos=vector(0, 0, 0), radius=20000, color=color.red)
+
+
+init = np.random.uniform(-1, 1, (num_particles, 3))  
+init = init / np.linalg.norm(init, axis=1, keepdims=True) * c
+
 particles = []
-velocities = []
-Forces = []
-positions = []
-Centr_Atom = sphere(pos=vector(0, 0, 0), radius=0.5, color=color.white)
-cylinders = []
-
-
-
-first_positions = []
 for i in range(num_particles):
-    new_position = norm(vector(random.uniform(-randm, randm), random.uniform(-randm, randm), random.uniform(-randm, randm)))*c
-    first_positions.append(new_position)
+    p = sphere(pos=vector(float(init[i,0]), float(init[i,1]), float(init[i,2])), radius=10000, color=color.green)
+    particles.append(p)
 
-positions.append(first_positions)
-    
-
-for i in range(num_particles):
-    new_particle = sphere(pos=positions[0][i], radius=0.25, color=color.green)
-    new_particle.pos = norm(new_particle.pos) * c
-    particles.append(new_particle)
-
-for i in range(num_particles):
-    new_velocity = vector(random.uniform(-speed, speed), random.uniform(-speed, speed), random.uniform(-speed, speed))
-    velocities.append(new_velocity)
+pos = init.copy()
+vel = np.random.uniform(-speed, speed, (num_particles, 3))  
 
 
-for i in range(num_particles):
-    cylinder_first = []
-    for j in range(num_particles):
-    
-        if i != j:
-            new_cylinder = cylinder(pos = positions[-1][i], axis = positions[-1][j]-positions[-1][i], length = mag(positions[-1][j]-positions[-1][i]), radius = 0.1, color = color.white, visible = False)
-            cylinder_first.append(new_cylinder)
-        else:
-            new_cylinder = None
-            cylinder_first.append(new_cylinder)
-    cylinders.append(cylinder_first)
+cylinders = []       
+bond_cylinders = {} 
 
-
-
-a = 0
-
-while a <= (Seconds_To_Run*60):
+if SHOW_CYLINDERS and not FINAL_CYLINDERS_ONLY:
+    print("Creating all cylinders upfront...")
+    cyl_start = time.time()
     for i in range(num_particles):
-        final_force = vector(0, 0, 0)
+        row = []
         for j in range(num_particles):
             if i != j:
-                dist = mag(positions[-1][i] - positions[-1][j])
-                force_magnitude = Force**2 / dist**2
-                direction = norm(positions[-1][i] - positions[-1][j])
-                force = force_magnitude * direction
-                final_force += force
-        final_force *= Force_const
-        Forces.append(final_force)
-    
-    Predictions = []
+                row.append(cylinder(
+                    pos=vector(float(pos[i,0]), float(pos[i,1]), float(pos[i,2])),
+                    axis=vector(float(pos[j,0]-pos[i,0]), float(pos[j,1]-pos[i,1]), float(pos[j,2]-pos[i,2])),
+                    length=float(np.linalg.norm(pos[j]-pos[i])),
+                    radius=500, color=color.white, visible=False
+                ))
+            else:
+                row.append(None)
+        cylinders.append(row)
+        if (i + 1) % 100 == 0:
+            print(f"  Cylinders: {i+1}/{num_particles} ({(i+1)/num_particles*100:.0f}%)")
+    print(f"Cylinders done in {time.time()-cyl_start:.1f}s!")
+
+
+arrows_tan = []
+arrows_rad = []
+if SHOW_ARROWS:
+    for i in range(num_particles):
+        arrows_tan.append(arrow(pos=vector(float(pos[i,0]), float(pos[i,1]), float(pos[i,2])), axis=vector(0,0.01,0), color=color.red, shaftwidth=0.12))
+        arrows_rad.append(arrow(pos=vector(float(pos[i,0]), float(pos[i,1]), float(pos[i,2])), axis=vector(0,0.01,0), color=color.cyan, shaftwidth=0.07, opacity=0.4))
+
+
+def run_physics(pos, vel, steps):
+    forces_hist = []
+    pos_hist = [pos.copy()]
+    start = time.time()
+    for a in range(steps):
+        forces = np.zeros((num_particles, 3))
+        for i in range(num_particles - 1):
+            diff = pos[i] - pos[i+1:]
+            dist = np.linalg.norm(diff, axis=1, keepdims=True)
+            dist = np.maximum(dist, 1e-10)
+            f = (Force**2 / dist**2) * (diff / dist) * Force_const
+            forces[i]    += f.sum(axis=0)
+            forces[i+1:] -= f
+
+        if SHOW_ARROWS:
+            forces_hist.append(forces.copy())
+
+        predicted = pos + vel/60 + forces/7200
+        mag_ = np.linalg.norm(predicted, axis=1, keepdims=True)
+        mag_ = np.maximum(mag_, 1e-10)
+        pos = predicted + (c - mag_) * (predicted / mag_) * Normalisation_factor
+        vel = (vel + forces/60) * Damp_const
+
+        if not FINAL_ONLY:
+            pos_hist.append(pos.copy())
+
+        if (a + 1) % 60 == 0:
+            elapsed = time.time() - start
+            seconds_done = (a + 1) // 60
+            pct = (a + 1) / steps * 100
+            eta = (elapsed / (a + 1)) * (steps - a - 1)
+            print(f"  [{pct:5.1f}%] second {seconds_done}/{Seconds_To_Run} — elapsed: {elapsed:.1f}s — ETA: {eta:.1f}s")
+
+    total_time = time.time() - start
+    print(f"\nDone in {total_time:.1f}s!")
+    return pos, vel, pos_hist, forces_hist
+
+
+def create_bond_cylinders(pos):
+    print("Computing bonds and creating cylinders...")
+    bond_start = time.time()
+    dists_all = np.linalg.norm(pos[:, np.newaxis, :] - pos[np.newaxis, :, :], axis=2)
+    np.fill_diagonal(dists_all, np.inf)
+    bc = {}
+    count = 0
+    for i in range(num_particles):
+        lowest_dist = float(np.min(dists_all[i]))
+        for k in range(num_particles):
+            if i == k:
+                continue
+            d = float(dists_all[i][k])
+            if lowest_dist*0.7 < d < lowest_dist*1.3:
+                cyl = cylinder(
+                    pos=vector(float(pos[i,0]), float(pos[i,1]), float(pos[i,2])),
+                    axis=vector(float(pos[k,0]-pos[i,0]), float(pos[k,1]-pos[i,1]), float(pos[k,2]-pos[i,2])),
+                    length=d,
+                    radius=500, color=color.white, visible=True
+                )
+                bc[(i, k)] = cyl
+                count += 1
+    print(f"Created {count} bond cylinders in {time.time()-bond_start:.1f}s")
+    return bc
+
+
+def update_bond_cylinders(bc, frame):
+    for (i, k), cyl in bc.items():
+        cyl.pos = vector(float(frame[i,0]), float(frame[i,1]), float(frame[i,2]))
+        cyl.axis = vector(
+            float(frame[k,0]-frame[i,0]),
+            float(frame[k,1]-frame[i,1]),
+            float(frame[k,2]-frame[i,2])
+        )
+        cyl.length = float(np.linalg.norm(frame[k]-frame[i]))
+
+
+def update_all_cylinders(cylinders, frame):
+    for i in range(len(cylinders)):
+        dists = np.linalg.norm(frame - frame[i], axis=1)
+        dists[i] = np.inf
+        lowest_dist = float(np.min(dists))
+        for k in range(num_particles):
+            if i == k:
+                continue
+            d = float(dists[k])
+            if lowest_dist*0.7 < d < lowest_dist*1.3:
+                cylinders[i][k].pos = particles[i].pos
+                cylinders[i][k].axis = vector(
+                    float(frame[k,0]-frame[i,0]),
+                    float(frame[k,1]-frame[i,1]),
+                    float(frame[k,2]-frame[i,2])
+                )
+                cylinders[i][k].length = d
+                cylinders[i][k].visible = True
+            else:
+                cylinders[i][k].visible = False
+
+
+angle = 0
+rotation_speed = 0
+
+if FINAL_ONLY:
+    print("Computing final structure...")
+    pos, vel, _, _ = run_physics(pos, vel, total_steps)
 
     for i in range(num_particles):
-        Predicted_coords = positions[-1][i] + (velocities[i] * 1/60) + (Forces[i]*1/7200)
-        Final_Pos = Predicted_coords + (c - mag(Predicted_coords))*norm(Predicted_coords)*Normalisation_factor
-        Predictions.append(Final_Pos)
-        velocities[i] += Forces[i]*1/60
-        velocities[i] *= Damp_const
-        
-    positions.append(Predictions)
-    
-    Forces = []
-    
-    
-    a+=1
-    
-while True:
-    rate(rate_pre)
-    for j in range(len(positions)):
+        particles[i].pos = vector(float(pos[i,0]), float(pos[i,1]), float(pos[i,2]))
+
+    if SHOW_CYLINDERS:
+        if FINAL_CYLINDERS_ONLY:
+            bond_cylinders = create_bond_cylinders(pos)
+        else:
+            
+            dists_all = np.linalg.norm(pos[:, np.newaxis, :] - pos[np.newaxis, :, :], axis=2)
+            np.fill_diagonal(dists_all, np.inf)
+            for i in range(num_particles):
+                lowest_dist = float(np.min(dists_all[i]))
+                for k in range(num_particles):
+                    if i == k:
+                        continue
+                    d = float(dists_all[i][k])
+                    if lowest_dist*0.7 < d < lowest_dist*1.3:
+                        cylinders[i][k].pos = particles[i].pos
+                        cylinders[i][k].axis = vector(float(pos[k,0]-pos[i,0]), float(pos[k,1]-pos[i,1]), float(pos[k,2]-pos[i,2]))
+                        cylinders[i][k].length = d
+                        cylinders[i][k].visible = True
+                    else:
+                        cylinders[i][k].visible = False
+
+    print("Showing final structure. Rotating...")
+    while True:
         rate(rate_pre)
-        for i in range(num_particles):
-            particles[i].pos = positions[j][i]
-        
-        for i in range(len(cylinders)):
-            lowest_dist = 10000
-            
-            for k in range(num_particles):
-                if i == k:
-                    continue
-                if (mag(positions[j][k]-positions[j][i]) < lowest_dist):
-                    lowest_dist = mag(positions[j][k]-positions[j][i])
-            
-            for k in range(num_particles):
-                if i == k:
-                    continue
-                if (mag(positions[j][k]-positions[j][i]) > lowest_dist*0.9 and mag(positions[j][k]-positions[j][i]) < lowest_dist*1.1):
-                    cylinders[i][k].pos = positions[j][i]
-                    cylinders[i][k].axis = positions[j][k]-positions[j][i]
-                    cylinders[i][k].length = mag(positions[j][k]-positions[j][i])
-                    cylinders[i][k].visible = True
+        angle += rotation_speed
+        scene.forward = vector(sin(angle), -0.3, -cos(angle))
+
+else:
+    print("Computing all frames...")
+    pos, vel, positions_np, forces_history = run_physics(pos, vel, total_steps)
+
+    if SHOW_CYLINDERS and FINAL_CYLINDERS_ONLY:
+        bond_cylinders = create_bond_cylinders(pos)
+
+    print("Starting animation...")
+    while True:
+        rate(rate_pre)
+        for j in range(len(positions_np)):
+            rate(rate_pre)
+            angle += rotation_speed
+            scene.forward = vector(sin(angle), -0.3, -cos(angle))
+
+            frame = positions_np[j]
+            for i in range(num_particles):
+                particles[i].pos = vector(float(frame[i,0]), float(frame[i,1]), float(frame[i,2]))
+
+            if SHOW_ARROWS and j < len(forces_history):
+                for i in range(num_particles):
+                    r_hat = frame[i] / np.linalg.norm(frame[i])
+                    f = forces_history[j][i] * arrow_scale
+                    f_rad = np.dot(f, r_hat) * r_hat
+                    f_tan = f - f_rad
+                    arrows_tan[i].pos = particles[i].pos
+                    arrows_tan[i].axis = vector(float(f_tan[0]), float(f_tan[1]), float(f_tan[2]))
+                    arrows_rad[i].pos = particles[i].pos
+                    arrows_rad[i].axis = vector(float(f_rad[0]*0.4), float(f_rad[1]*0.4), float(f_rad[2]*0.4))
+
+            if SHOW_CYLINDERS:
+                if FINAL_CYLINDERS_ONLY:
+                    update_bond_cylinders(bond_cylinders, frame)
                 else:
-                    cylinders[i][k].visible = False
-                    
-                
-    
-    
-        
-        
-        
-                    
-                
-           
-        
-        
-    
-    
-    '''rate(30)
-    distH1H2 = mag(H1.pos - H2.pos)
-    ForceH1H2 = Force**2 / distH1H2**2 
-    directionH1H2 = norm(H1.pos - H2.pos)
-    FinalForceH1H2 = ForceH1H2 * directionH1H2
-    
-    distH1H3 = mag(H1.pos - H3.pos)
-    ForceH1H3 = Force**2 / distH1H3**2
-    directionH1H3 = norm(H1.pos - H3.pos)
-    FinalForceH1H3 = ForceH1H3 * directionH1H3
-
-    distH1H4 = mag(H1.pos - H4.pos)
-    ForceH1H4 = Force**2 / distH1H4**2
-    directionH1H4 = norm(H1.pos - H4.pos)
-    FinalForceH1H4 = ForceH1H4 * directionH1H4
-    
-    distH1H5 = mag(H1.pos - H5.pos)
-    ForceH1H5 = Force**2 / distH1H5**2 
-    directionH1H5 = norm(H1.pos - H5.pos)
-    FinalForceH1H5 = ForceH1H5 * directionH1H5
-    
-    distH1H6 = mag(H1.pos - H6.pos)
-    ForceH1H6 = Force**2 / distH1H6**2
-    directionH1H6 = norm(H1.pos - H6.pos)
-    FinalForceH1H6 = ForceH1H6 * directionH1H6
-
-    FinalForceH1 = (FinalForceH1H2 + FinalForceH1H3 + FinalForceH1H4 + FinalForceH1H5 + FinalForceH1H6) * Force_const
-    PredictedCoordH1 = H1.pos + (V1*(1/60)) +  (FinalForceH1 * (1/7200))
-    FinalCoordH1 = PredictedCoordH1 + (norm(PredictedCoordH1) * (c - mag(PredictedCoordH1))*0.3)
-    V1 += FinalForceH1 * (1/60)
-    V1 *= Damp_const
-
-
-
-    
-    
-    distH2H3 = mag(H2.pos - H3.pos)
-    ForceH2H3 = Force**2 / distH2H3**2
-    directionH2H3 = norm(H2.pos - H3.pos)
-    FinalForceH2H3 = ForceH2H3 * directionH2H3
-
-    distH2H4 = mag(H2.pos - H4.pos)
-    ForceH2H4 = Force**2 / distH2H4**2
-    directionH2H4 = norm(H2.pos - H4.pos)
-    FinalForceH2H4 = ForceH2H4 * directionH2H4
-    
-    distH2H5 = mag(H2.pos - H5.pos)
-    ForceH2H5 = Force**2 / distH2H5**2
-    directionH2H5 = norm(H2.pos - H5.pos)
-    FinalForceH2H5 = ForceH2H5 * directionH2H5
-    
-    distH2H6 = mag(H2.pos - H6.pos)
-    ForceH2H6 = Force**2 / distH2H6**2
-    directionH2H6 = norm(H2.pos - H6.pos)
-    FinalForceH2H6 = ForceH2H6 * directionH2H6
-
-    FinalForceH2 = ((-FinalForceH1H2) + FinalForceH2H3 + FinalForceH2H4 + FinalForceH2H5 + FinalForceH2H6) * Force_const
-    PredictedCoordH2 = H2.pos + (V2*(1/60)) + (FinalForceH2 * (1/7200))
-    FinalCoordH2 = PredictedCoordH2 + (norm(PredictedCoordH2) * (c - mag(PredictedCoordH2))*0.3)
-    V2 += FinalForceH2 * (1/60)
-    V2 *= Damp_const
-
-    
-
-    distH3H4 = mag(H3.pos - H4.pos)
-    ForceH3H4 = Force**2 / distH3H4**2
-    directionH3H4 = norm(H3.pos - H4.pos)
-    FinalForceH3H4 = ForceH3H4 * directionH3H4
-    
-    distH3H5 = mag(H3.pos - H5.pos)
-    ForceH3H5 = Force**2 / distH3H5**2
-    directionH3H5 = norm(H3.pos - H5.pos)
-    FinalForceH3H5 = ForceH3H5 * directionH3H5
-    
-    distH3H6 = mag(H3.pos - H6.pos)
-    ForceH3H6 = Force**2 / distH3H6**2
-    directionH3H6 = norm(H3.pos - H6.pos)
-    FinalForceH3H6 = ForceH3H6 * directionH3H6
-
-    FinalForceH3 = ((-FinalForceH1H3) + (-FinalForceH2H3) + FinalForceH3H4 + FinalForceH3H5 + FinalForceH3H6) * Force_const
-    PredictedCoordH3 = H3.pos + (V3*(1/60)) + (FinalForceH3 * (1/7200))
-    FinalCoordH3 = PredictedCoordH3 + (norm(PredictedCoordH3) * (c - mag(PredictedCoordH3))*0.3)
-    V3 += FinalForceH3 * (1/60)
-    V3 *= Damp_const
-
-
-
-    
-    
-    
-    
-    distH4H5 = mag(H4.pos - H5.pos)
-    ForceH4H5 = Force**2 / distH4H5**2
-    directionH4H5 = norm(H4.pos - H5.pos)
-    FinalForceH4H5 = ForceH4H5 * directionH4H5
-    
-    distH4H6 = mag(H4.pos - H6.pos)
-    ForceH4H6 = Force**2 / distH4H6**2
-    directionH4H6 = norm(H4.pos - H6.pos)
-    FinalForceH4H6 = ForceH4H6 * directionH4H6
-
-    FinalForceH4 = ((-FinalForceH1H4) + (-FinalForceH2H4) + (-FinalForceH3H4) + FinalForceH4H5 + FinalForceH4H6) * Force_const
-    PredictedCoordH4 = H4.pos + (V4*(1/60)) + (FinalForceH4 * (1/7200))
-    FinalCoordH4 = PredictedCoordH4 + (norm(PredictedCoordH4) * (c - mag(PredictedCoordH4))*0.3)
-    V4 += FinalForceH4 * (1/60)
-    V4 *= Damp_const
-
-
-    distH5H6 = mag(H5.pos - H6.pos)
-    ForceH5H6 = Force**2 / distH5H6**2
-    directionH5H6 = norm(H5.pos - H6.pos)
-    FinalForceH5H6 = ForceH5H6 * directionH5H6
-
-    FinalForceH5 = ((-FinalForceH1H5) + (-FinalForceH2H5) + (-FinalForceH3H5) + (-FinalForceH4H5) + FinalForceH5H6) * Force_const
-    PredictedCoordH5 = H5.pos + (V5*(1/60)) + (FinalForceH5 * (1/7200))
-    FinalCoordH5 = PredictedCoordH5 + (norm(PredictedCoordH5) * (c - mag(PredictedCoordH5))*0.3)
-    V5 += FinalForceH5 * (1/60)
-    V5 *= Damp_const
-
-
-
-    FinalForceH6 = ((-FinalForceH1H6) + (-FinalForceH2H6) + (-FinalForceH3H6) + (-FinalForceH4H6) + (-FinalForceH5H6)) * Force_const
-    PredictedCoordH6 = H6.pos + (V6*(1/60)) + (FinalForceH6 * (1/7200))
-    FinalCoordH6 = PredictedCoordH6 + (norm(PredictedCoordH6) * (c - mag(PredictedCoordH6))*0.3)
-    V6 += FinalForceH6 * (1/60)
-    V6 *= Damp_const
-
-
-
-    
-
-
-    H1.pos = FinalCoordH1
-    H2.pos = FinalCoordH2
-    H3.pos = FinalCoordH3
-    H4.pos = FinalCoordH4
-    H5.pos = FinalCoordH5
-    H6.pos = FinalCoordH6
-    
-    
-    C1.pos = H1.pos
-    C1.axis = H2.pos - H1.pos
-    C1.length = mag(H2.pos - H1.pos)
-    C2.pos = H1.pos
-    C2.axis = H3.pos - H1.pos
-    C2.length = mag(H3.pos - H1.pos)
-    C3.pos = H1.pos
-    C3.axis = H4.pos - H1.pos
-    C3.length = mag(H4.pos - H1.pos)
-    C4.pos = H1.pos
-    C4.axis = H5.pos - H1.pos
-    C4.length = mag(H5.pos - H1.pos)
-    C5.pos = H1.pos
-    C5.axis = H6.pos - H1.pos
-    C5.length = mag(H6.pos - H1.pos)
-    
-    C6.pos = H2.pos
-    C6.axis = H3.pos - H2.pos
-    C6.length = mag(H3.pos - H2.pos)
-    C7.pos = H2.pos
-    C7.axis = H4.pos - H2.pos
-    C7.length = mag(H4.pos - H2.pos)
-    C8.pos = H2.pos
-    C8.axis = H5.pos - H2.pos
-    C8.length = mag(H5.pos - H2.pos)
-    C9.pos = H2.pos
-    C9.axis = H6.pos - H2.pos
-    C9.length = mag(H6.pos - H2.pos)
-    
-    C10.pos = H3.pos
-    C10.axis = H4.pos - H3.pos
-    C10.length = mag(H4.pos - H3.pos)
-    C11.pos = H3.pos
-    C11.axis = H5.pos - H3.pos
-    C11.length = mag(H5.pos - H3.pos)
-    C12.pos = H3.pos
-    C12.axis = H6.pos - H3.pos
-    C12.length = mag(H6.pos - H3.pos)
-    
-    C13.pos = H4.pos
-    C13.axis = H5.pos - H4.pos
-    C13.length = mag(H5.pos - H4.pos)
-    C14.pos = H4.pos
-    C14.axis = H6.pos - H4.pos
-    C14.length = mag(H6.pos - H4.pos)
-    
-    C15.pos = H5.pos
-    C15.axis = H6.pos - H5.pos
-    C15.length = mag(H6.pos - H5.pos)'''
+                    update_all_cylinders(cylinders, frame)
