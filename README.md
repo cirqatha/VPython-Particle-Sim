@@ -16,6 +16,7 @@ If you run the Python script, you can go for much larger simulation, like this 1
 <img width="1895" height="885" alt="Screenshot 2026-07-16 230359" src="https://github.com/user-attachments/assets/4d806c44-64fa-45a6-b5a0-4c5344420950" />
 
 
+
 ## Calculation
 
 - Every particle exerts an inverse-square repulsive force on every other particle
