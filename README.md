@@ -7,6 +7,8 @@ theory by taking in a number of peripheral atoms.
 No AI was used, it was just calculation stuff to do before working on this simulation project. 
 
 ## Live Demo
+
+READ THIS FIRST!!!!!!!!!!!!! WAIT 10-20 SECONDS AFTER OPENING THE WEB PROJECT, ITS COMPUTING AROUND 5000 OBJECTS PER FRAME AND STORING THEM BEFORE STARTING THE SIMULATION SO THAT IT CAN BE SMOOTH
 https://glowscript.org/#/user/angadmaster123/folder/MyPrograms/program/AtomSim
 
 No install needed — works in any browser.
