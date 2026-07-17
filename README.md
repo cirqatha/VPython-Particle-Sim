@@ -13,7 +13,7 @@ READ THIS FIRST!!!!!!!!!!!!!
 ITS COMPUTING AROUND 10000 TOTAL OBJECTS PER FRAME AND STORING THEM BEFORE STARTING THE SIMULATION SO THAT IT CAN BE SMOOTH
 https://glowscript.org/#/user/angadmaster123/folder/MyPrograms/program/AtomSim
 
-If you run the Python script, you can go for much larger simulation, like this 10000 particle beast which took 20 minutes just to compute even with numpy calculations
+If you run the Python script, you can go for much larger simulation, like this 10000 particle beast, with a total of 100000000 objects which took 20 minutes to compute only after doing smart calculations of cylinders connecting the atoms bringing the number down to 70000 objects
 
 <img width="1895" height="885" alt="Screenshot 2026-07-16 230359" src="https://github.com/user-attachments/assets/4d806c44-64fa-45a6-b5a0-4c5344420950" />
 
