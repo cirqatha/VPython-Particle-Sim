@@ -11,7 +11,10 @@ No AI was used, it was just calculation stuff to do before working on this simul
 READ THIS FIRST!!!!!!!!!!!!! WAIT 10-20 SECONDS AFTER OPENING THE WEB PROJECT, ITS COMPUTING AROUND 5000 OBJECTS PER FRAME AND STORING THEM BEFORE STARTING THE SIMULATION SO THAT IT CAN BE SMOOTH
 https://glowscript.org/#/user/angadmaster123/folder/MyPrograms/program/AtomSim
 
-No install needed — works in any browser.
+If you run the Python script, you can go for much larger simulation, like this 10000 particle beast which took 20 minutes just to compute even with numpy calculations
+
+<img width="1895" height="885" alt="Screenshot 2026-07-16 230359" src="https://github.com/user-attachments/assets/4d806c44-64fa-45a6-b5a0-4c5344420950" />
+
 
 ## Calculation
 
