@@ -28,7 +28,7 @@ If you run the Python script, you can go for much larger simulation, like this 1
 
   
 ## How to Run Locally 
-Just run the HTML file if python one causes error
+It uses numpy and VPython
 
 ### Requirements
 - Python 3.x
